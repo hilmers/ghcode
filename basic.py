@@ -9,7 +9,7 @@ def parse_dataset(data):
 
 	for ride in range(nbr_rides):
 		row_start, col_start, row_fin, col_fin, start, finish = map(int, data.readline().strip().split())
-		ride = {'row_start': row_start, 'col_start': col_start, 'row_fin': row_fin, 'col_fin': col_fin, 't_start': start, 't_finish': finish}
+		ride = {'row_start': row_start, 'col_start': col_start, 'row_fin': row_fin, 'col_fin': col_fin, 't_start': start, 't_finish': finish, 'used': 0}
 		rides.append(ride)
 
 	return steps, cars, car_a, car_p, rides
@@ -33,7 +33,10 @@ def output_str(rides):
 def get_closest_ride(car_pos, rides):
 	dummy_list = []
 	for ride in rides:
-		dummy_list.append(get_dist(car_pos[0], car_pos[1], ride['row_start'], ride['col_start']))
+		if ride['used'] == 1:
+			dummy_list.append(99999999999999)
+		else:
+			dummy_list.append(get_dist(car_pos[0], car_pos[1], ride['row_start'], ride['col_start']))
 	x, i = min((x, i) for (i, x) in enumerate(dummy_list))
 	return i, x
 
@@ -67,19 +70,21 @@ for step in range(steps):
 	for car_idx, car_t in enumerate(car_timings):
 		if car_t >= step:
 			ride_i, ride_distance = get_closest_ride(car_pos[car_idx], rides)
-			car_pos[car_idx] = (ride[ride_i]['row_fin'], ride[ride_i]['col_fin']) # Updating the position of the car.
-			car_to_ride[car_idx].append(ride_i) # Appending a ride to a car
-			
-			if (ride_distance != 0) && ((ride[ride_i]['t_start'] - step) > 0):
-				car_timings[car_idx] = ride_distance + (ride[ride_i]['t_start'] - step) + ride_dist(ride[ride_i])
-			elif (ride_distance == 0) && ((ride[ride_i]['t_start'] - step) > 0):
-				car_timings[car_idx] = ride_distance + ride[ride_i]['t_start'] + ride_dist(ride[ride_i])
-			elif (ride[ride_i]['t_start'] - step) <= 0:
-				car_timings[car_idx] = ride_distance + step + ride_dist(ride[ride_i])
+			if rides[ride_i]['used'] != 1:
+				if (ride_distance != 0) and ((rides[ride_i]['t_start'] - step) > 0):
+					car_timings[car_idx] = ride_distance + (rides[ride_i]['t_start'] - step) + ride_dist(rides[ride_i])
+				elif (ride_distance == 0) and ((rides[ride_i]['t_start'] - step) > 0):
+					car_timings[car_idx] = ride_distance + rides[ride_i]['t_start'] + ride_dist(rides[ride_i])
+				elif (rides[ride_i]['t_start'] - step) <= 0:
+					car_timings[car_idx] = ride_distance + step + ride_dist(rides[ride_i])
 
+				car_pos[car_idx] = (rides[ride_i]['row_fin'], rides[ride_i]['col_fin']) # Updating the position of the car.
+				car_to_ride[car_idx].append(ride_i) # Appending a ride to a car
+				rides[ride_i]['used'] = 1
 
 # Write the output
-with open(file + '.out', 'w') as f:
+
+with open(file + '.txt', 'w') as f:
 	output = ""
 	for car_ride in car_to_ride:
 		output += output_str(car_ride)
