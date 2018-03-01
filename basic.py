@@ -14,11 +14,14 @@ def parse_dataset(data):
 
 	return steps, cars, car_a, car_p, rides
 
-def calc_dist(ride):
+def ride_dist(ride):
 	# Get the distance for a ride.
 	row_dist = abs(ride['row_start'] - ride['row_fin'])
 	col_dist = abs(ride['col_start'] - ride['col_fin'])
 	return row_dist + col_dist
+
+def get_dist(a, b, x, y):
+	return abs(a - x) + abs(b - y)
 
 def output_str(rides):
 	output_line = "%d " % len(rides)
@@ -26,6 +29,13 @@ def output_str(rides):
 		output_line += ("%d " % ride)
 	output_line += '\n'
 	return output_line
+
+def get_closest_ride(car_pos, rides):
+	dummy_list = []
+	for ride in rides:
+		dummy_list.append(get_dist(car_pos[0], car_pos[1], ride['row_start'], ride['col_start']))
+	x, i = min((x, i) for (i, x) in enumerate(dummy_list))
+	return i, x
 
 
 file = 'b_should_be_easy' # The input file
@@ -36,9 +46,36 @@ with open(file + '.in') as f:
 car_to_ride = [[] for _ in range(cars)]
 
 
-# THE SIMULATION
+#car_pos_test = (0,0)
+#rides_test = [{'row_start': 4, 'col_start': 2}, {'row_start': 2, 'col_start': 1}, {'row_start': 1, 'col_start': 1}]
+
+
+#i, x = get_closest_ride(car_pos_test, rides_test)
+#print(i)
+#print(x)
+
+# THE SIMPLE SIMULATION
+"""
 for i, ride in enumerate(rides):
 	car_to_ride[i % cars].append(i)
+"""
+
+# THE NEXT STEP
+
+car_timings = [0] * cars
+for step in range(steps):
+	for car_idx, car_t in enumerate(car_timings):
+		if car_t >= step:
+			ride_i, ride_distance = get_closest_ride(car_pos[car_idx], rides)
+			car_pos[car_idx] = (ride[ride_i]['row_fin'], ride[ride_i]['col_fin']) # Updating the position of the car.
+			car_to_ride[car_idx].append(ride_i) # Appending a ride to a car
+			
+			if (ride_distance != 0) && ((ride[ride_i]['t_start'] - step) > 0):
+				car_timings[car_idx] = ride_distance + (ride[ride_i]['t_start'] - step) + ride_dist(ride[ride_i])
+			elif (ride_distance == 0) && ((ride[ride_i]['t_start'] - step) > 0):
+				car_timings[car_idx] = ride_distance + ride[ride_i]['t_start'] + ride_dist(ride[ride_i])
+			elif (ride[ride_i]['t_start'] - step) <= 0:
+				car_timings[car_idx] = ride_distance + step + ride_dist(ride[ride_i])
 
 
 # Write the output
