@@ -7,10 +7,12 @@ def parse_dataset(data):
 
 	for ride in range(rows):
 		row_start, col_start, row_fin, col_fin, start, finish = map(int, data.readline().strip().split())
-		ride = {'row_start': row_start, 'col_start': col_start, 'row_fin': row_fin, 'col_fin': col_fin, 'start': start, 'finish': finish}
+		ride = {'row_start': row_start, 'col_start': col_start, 'row_fin': row_fin, 'col_fin': col_fin, 't_start': start, 't_finish': finish}
 		rides.append(ride)
 
 	return rides
+
+def calculate_d
 
 def main():
 	file = 'a_example.in'
