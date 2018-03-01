@@ -49,3 +49,16 @@ with open(file + '.out', 'w') as f:
 	f.write(output)
 
 
+
+
+"""
+For ts in steps:
+	for car in cars:
+		if car['endTs'] >= ts
+			distances = getDistanceToRides(rides)
+			ride = index(min(distances))
+			car['ride'] = ride
+			car['endTs'] = distance2startpos + (ts-earlystart) + ridelength
+			car['endPos'] = rideEndingPosition
+			rides[ride] = []
+"""
